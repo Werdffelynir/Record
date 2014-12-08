@@ -112,6 +112,8 @@ $app->map('/', function() use ($app) {
 
     $userIp = Record::callHook('showIp',['str'=>'User IP:']);
 
+    $app->session('jopa','sam data jopa');
+
     $app->render('main',[
         'title'=>'Home Page',
         'content'=>'Home Page Content'.$userIp,
@@ -119,7 +121,8 @@ $app->map('/', function() use ($app) {
 });
 
 $app->map('/docs', function() use ($app) {
-
+    echo $app->session('jopa');
+    $app->session('jopa',null);
     global $list;
 
     $app->render('main',[

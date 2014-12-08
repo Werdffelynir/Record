@@ -373,6 +373,80 @@ class Record
     }
 
 
+# prints out no-cache headers before dumping passed content
+    public  function nocache($content = null) {
+
+        $stamp = gmdate('D, d M Y H:i:s', $_SERVER['REQUEST_TIME']).' GMT';
+
+        # dump no-cache headers
+        header('Expires: Tue, 13 Mar 1979 18:00:00 GMT');
+        header('Last-Modified: '.$stamp);
+        header('Cache-Control: no-store, no-cache, must-revalidate');
+        header('Cache-Control: post-check=0, pre-check=0', false);
+        header('Pragma: no-cache');
+
+        # if you have content, dump it
+        return $content && strlen($content) && (print $content);
+    }
+
+    # maps directly to json_encode, but renders JSON headers as well
+    public function json() {
+
+        $json = call_user_func_array('json_encode', func_get_args());
+        $err = json_last_error();
+
+        # trigger a user error for failed encodings
+        if ($err !== JSON_ERROR_NONE) {
+            throw new \RuntimeException(
+                "JSON encoding failed [{$err}].",
+                500
+            );
+        }
+
+        header('Content-type: application/json');
+        return print $json;
+    }
+
+    # shortcut for http_response_code()
+    public function status($code) {
+        return http_response_code($code);
+    }
+
+
+# accessor for $_COOKIE when fetching values, or maps directly
+# to setcookie() when setting values.
+    public function cookies() {
+
+        $argc = func_num_args();
+        $argv = func_get_args();
+
+        # cookie fetch, get from $_COOKIE, or null
+        if ($argc == 1)
+            return isset($_COOKIE[$argv[0]]) ? $_COOKIE[$argv[0]] : null;
+
+        # set, just map to setcookie()
+        return call_user_func_array('setcookie', $argv);
+    }
+    # accessor for $_SESSION
+    public function session($name, $value = null) {
+
+        if(!isset($_SESSION))
+            session_start();
+
+        # session var set
+        if (func_num_args() == 2)
+            return ($_SESSION[$name] = $value);
+
+        # session var get
+        return isset($_SESSION[$name]) ? $_SESSION[$name] : null;
+    }
+
+
+
+
+
+
+
     # VIEWS
     # - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -465,6 +539,63 @@ class Record
 
     # HELPERS METHODS
     # - - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    private static $_flashStorage;
+    /**
+     * Выводит или регистрирует флеш сообщения для даной страницы или следующей переадрисации.
+     * Указать два аргумента для регистрации сообщения, один для вывода. Если указать претий аргумент
+     * в FALSE, сообщение будет удалено поле первого вывода.
+     *
+     * <pre>
+     * Регистрация сообщения:
+     * App::flash('edit','Запись в базе данных успешно обновлена!');
+     * Вывод после переадрисации:
+     * App::flash('edit');
+     * </pre>
+     *
+     * @param string $key Ключ флеш сообщения
+     * @param mixed $value Значение
+     * @param bool $keep Продлить существования сообщения до следущего реквкста; по умолчанию TRUE
+     *
+     * @return mixed
+     */
+    public static function flash($key = null, $value = null, $keep = true)
+    {
+        if (!isset($_SESSION)) session_start();
+        $flash = 'flash';
+
+        if (func_num_args() > 1)
+        {
+            $old = isset($_SESSION[$flash][$key]) ? $_SESSION[$flash][$key] : null;
+
+            if (isset($value)) {
+                $_SESSION[$flash][$key] = $value;
+
+                if ($keep)
+                    self::$_flashStorage[$key] = $value;
+                else
+                    unset(self::$_flashStorage[$key]);
+
+            } else {
+                unset(self::$_flashStorage[$key]);
+                unset($_SESSION[$flash][$key]);
+            }
+
+            return $old;
+
+        }
+        else if (func_num_args())
+        {
+            $flashMessage = isset($_SESSION[$flash][$key]) ? $_SESSION[$flash][$key] : null;
+            unset(self::$_flashStorage[$key]);
+            unset($_SESSION[$flash][$key]);
+            return $flashMessage;
+        }
+        else
+            return self::$_flashStorage;
+
+    }
+
 
     public function thisUrl()
     {
