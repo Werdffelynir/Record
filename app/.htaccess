@@ -1,6 +1,6 @@
 RewriteEngine On
 
-RewriteBase /record/
+RewriteBase /record/app/
 
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d

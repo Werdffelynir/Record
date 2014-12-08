@@ -1,6 +1,6 @@
 <?php
 
-require('record/Record.php');
+require('../record/Record.php');
 
 use \record\Record;
 
@@ -8,7 +8,7 @@ $conf = [
     'lang'=>'ru',
     'debug'=>true,
 
-    'path'=>'/record/',
+    'path'=>'/record/app/',
 
     'views'=>'/views/',
     'models'=>'/models/',
