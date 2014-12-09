@@ -3,12 +3,15 @@ namespace record;
 
 class Record
 {
+    public $auth;
+
     public $debug;
     public $root;
     public $layout;
     public $controller = null;
     public $request;
     public $args;
+
     private $partialData = [];
     private $outputData;
     private $chunk;
@@ -38,22 +41,17 @@ class Record
     private function autoloadAppClasses($className)
     {
         $className = str_replace('\\', '/', $className);
-
-        $fileName = $className.'.php';
+        $fileName = $this->root.$className.'.php';
         if (is_file($fileName))
             include_once $fileName;
     }
 
     private function setConf(array $conf)
     {
-        foreach ($conf as $key=>$val) {
-            self::$_conf[$key]=$val;
-        }
-
-        $confDefault = [
+        self::$_conf = [
             'debug'=>false,
             'lang'=>null,
-            'root'=> substr($_SERVER['SCRIPT_FILENAME'],0,-9),
+            'root'=> substr($_SERVER['SCRIPT_FILENAME'],0,-10),
             'path'=>'',
             'views'=>'',
             'models'=>'',
@@ -63,20 +61,13 @@ class Record
             'messageError404'=>'<h1>Error 404!</h1><h3>Page not found.</h3>',
         ];
 
-        if(empty(self::$_conf['debug'])) self::$_conf['debug'] = $confDefault['debug'];
-        if(empty(self::$_conf['lang'])) self::$_conf['lang'] = $confDefault['lang'];
-        if(empty(self::$_conf['root'])) self::$_conf['root'] = $confDefault['root'];
-        if(empty(self::$_conf['path'])) self::$_conf['path'] = $confDefault['path'];
-        if(empty(self::$_conf['views'])) self::$_conf['views'] = $confDefault['views'];
-        if(empty(self::$_conf['models'])) self::$_conf['models'] = $confDefault['models'];
-        if(empty(self::$_conf['controllers'])) self::$_conf['controllers'] = $confDefault['controllers'];
-        if(empty(self::$_conf['layout'])) self::$_conf['layout'] = $confDefault['layout'];
-        if(empty(self::$_conf['callError404'])) self::$_conf['callError404'] = $confDefault['callError404'];
-        if(empty(self::$_conf['messageError404'])) self::$_conf['messageError404'] = $confDefault['messageError404'];
+        foreach ($conf as $key=>$val) {
+            self::$_conf[$key]=$val;
+        }
 
         $this->debug = self::$_conf['debug'];
         $this->layout = self::$_conf['layout'];
-        $this->root = self::$_conf['root'];
+        $this->root = self::$_conf['root'] = trim(self::$_conf['root'],'/').'/';
     }
 
     public function conf($key, $strong=true)
@@ -93,7 +84,7 @@ class Record
 
     public function url()
     {
-        if(isset(self::$_conf['path']))
+        if(!empty(self::$_conf['path']))
             return '/'.trim(self::$_conf['path'],'/').'/';
         else
             return '/';
@@ -160,19 +151,6 @@ class Record
         }
     }
 
-    public static function callHeader($event, array $data = [])
-    {
-        if (isset(self::$hooksData[$event])) {
-            if(empty($data)){
-                self::apply(self::$hooksData[$event]['call'],self::$hooksData[$event]['data']);
-            } else {
-                self::apply(self::$hooksData[$event]['call'],$data);
-            }
-        } else {
-            return null;
-        }
-    }
-
     /**
      * Выполнение функции с аргуметами массив. При ошибке обрабатывает исключение.
      *
@@ -193,18 +171,22 @@ class Record
 
     public function run()
     {
-        $path = trim($this->conf('path',false),'/');
-        $request = ltrim($_SERVER['REQUEST_URI'],'/');
+        $path = $this->conf('path');
+        $request = $_SERVER['REQUEST_URI'];
+
         if(!empty($path) && strpos($request,$path)===0){
-            $request = substr($request,strlen($path));
+            $r = trim($request,'/');
+            $p = trim($path,'/');
+            $request = '/'.trim(substr($r,strlen($p)),'/');
         }
+
         $isCalled = false;
         $this->request = $request;
 
         foreach(self::$_maps as $key=>$val)
         {
-            if($isCalled)
-                continue;
+            if($isCalled) continue;
+
             if(strpos($request,$key)!==false)
             {
                 if(preg_match($val['regexp'],$request,$result)){
@@ -284,6 +266,7 @@ class Record
         self::$hooksData[$event]['call'] = $callback;
         self::$hooksData[$event]['data'] = $data;
     }
+
     public static function callHook($event, array $data = [])
     {
         if (isset(self::$hooksData[$event])) {
@@ -328,10 +311,10 @@ class Record
 
     public function render($view, array $data = [])
     {
-        $layoutPathname = $this->root.$this->layout.'.php';
+        $layoutPathname = $this->root.trim($this->layout,'/').'.php';
 
         if (!is_file($layoutPathname))
-            throw new \RuntimeException("File `$view` does not exist, path `$layoutPathname`");
+            throw new \RuntimeException("File `$this->layout.php` does not exist, path `$layoutPathname`");
 
         $this->outputData = $this->partial($view, $data);
 
@@ -341,7 +324,7 @@ class Record
 
     public function partial($view, array $data = [], $returned=true)
     {
-        $viewPathname = $this->root.ltrim($this->conf('views'),'/').$view.'.php';
+        $viewPathname = $this->root.trim($this->conf('views'),'/').'/'.trim($view,'/').'.php';
 
         if (!is_file($viewPathname))
             throw new \RuntimeException("File `$view` does not exist, path `$viewPathname`");
@@ -360,9 +343,50 @@ class Record
             echo ob_get_clean();
     }
 
+    /**
+     * Добавляет переменные в вид.
+     * Так же обявленные переменные можно вызвать используя ключ.
+     * <pre>
+     * $app->value('my_var','some var data');
+     * $app->value('my_var',); // return 'some var data';
+     *
+     * // аналогичто передаст переменную в вид как и массив данных метода render()
+     * $app->render('view',[
+     *      'my_var'=>'some var data'
+     * ]);
+     *
+     * </pre>
+     * @param $a
+     * @param null $b
+     * @param bool $rewrite
+     * @return null
+     */
+    public function value($a, $b=null, $rewrite=true){
+        if(is_array($a)){
+            foreach ($a as $key=>$val) {
+                $this->value($key,$val,$rewrite);
+            }
+        }else{
+            if($b){
+                if(isset($this->partialData[$a]) && $rewrite)
+                    return false;
+                else
+                    $this->partialData[$a] = $b;
+                return true;
+            }else{
+                if(isset($this->partialData[$a]))
+                    return $this->partialData[$a];
+                else{
+                    return null;
+                }
+            }
+        }
+    }
+
+
     public function redirect($url = null, $code = 302, $delay = 0)
     {
-        $url = ($url==null) ? $this->url() : $this->url() . $url;
+        $url = ($url==null) ? $this->url() : $this->url() . trim($url,'/');
 
         if ($delay) {
             header('Refresh: ' . $delay . '; url=' . $url, true);
@@ -373,8 +397,8 @@ class Record
     }
 
 
-# prints out no-cache headers before dumping passed content
-    public  function nocache($content = null) {
+    # prints out no-cache headers before dumping passed content
+    public function nocache($content = null) {
 
         $stamp = gmdate('D, d M Y H:i:s', $_SERVER['REQUEST_TIME']).' GMT';
 
@@ -397,10 +421,7 @@ class Record
 
         # trigger a user error for failed encodings
         if ($err !== JSON_ERROR_NONE) {
-            throw new \RuntimeException(
-                "JSON encoding failed [{$err}].",
-                500
-            );
+            throw new \RuntimeException("JSON encoding failed [{$err}].", 500);
         }
 
         header('Content-type: application/json');
@@ -413,19 +434,17 @@ class Record
     }
 
 
-# accessor for $_COOKIE when fetching values, or maps directly
-# to setcookie() when setting values.
-    public function cookies() {
+    # accessor for $_COOKIE when fetching values, or maps directly
+    # to setcookie() when setting values.
+    public function cookies($name, $value=null)
+    {
+        $argsNum = func_num_args();
+        $argsValues = func_get_args();
 
-        $argc = func_num_args();
-        $argv = func_get_args();
+        if ($argsNum == 1)
+            return isset($_COOKIE[$name]) ? $_COOKIE[$name] : null;
 
-        # cookie fetch, get from $_COOKIE, or null
-        if ($argc == 1)
-            return isset($_COOKIE[$argv[0]]) ? $_COOKIE[$argv[0]] : null;
-
-        # set, just map to setcookie()
-        return call_user_func_array('setcookie', $argv);
+        return call_user_func_array('setcookie', $argsValues);
     }
     # accessor for $_SESSION
     public function session($name, $value = null) {
@@ -441,8 +460,19 @@ class Record
         return isset($_SESSION[$name]) ? $_SESSION[$name] : null;
     }
 
+    public function post($name=null) {
+        if($name==null)
+            return (empty($_POST)) ? false : $_POST;
+        else
+            return isset($_POST[$name]) ? $_POST[$name] : null;
+    }
 
-
+    public function get($name=null) {
+        if($name==null)
+            return (empty($_GET)) ? false : $_GET;
+        else
+            return isset($_GET[$name]) ? $_GET[$name] : null;
+    }
 
 
 

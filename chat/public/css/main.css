@@ -1,0 +1,133 @@
+/* GRID */
+.grid_1,
+.grid_2,
+.grid_3,
+.grid_4,
+.grid_5,
+.grid_6,
+.grid_7,
+.grid_8,
+.grid_9,
+.grid_10,
+.grid_11{display:inline; float:left; margin:0 0 0 1.0416666666667%; list-style:none;}
+.first{margin-left:0; clear:left;}
+.full{display:block; width:100%; clear:both;}
+.clear_line{clear: both; width: 100%; height: 1px; margin-top: -1px;}
+.clear:before, .clear:after{content: " "; display: table;}
+.clear:after {clear: both;}
+.clear {*zoom: 1;}
+.grid{display:block; width:100%; clear:both;}
+.grid_1:first-child,
+.grid_2:first-child,
+.grid_3:first-child,
+.grid_4:first-child,
+.grid_5:first-child,
+.grid_6:first-child,
+.grid_7:first-child,
+.grid_8:first-child,
+.grid_9:first-child,
+.grid_10:first-child,
+.grid_11:first-child{margin-left:0;}
+.grid_1{width:7.3784722222222%;}
+.grid_2{width:15.798611111111%;}
+.grid_3{width:24.21875%;}
+.grid_4{width:32.638888888889%;}
+.grid_5{width:41.059027777778%;}
+.grid_6{width:49.479166666667%;}
+.grid_7{width:57.899305555556%;}
+.grid_8{width:66.319444444444%;}
+.grid_9{width:74.739583333333%;}
+.grid_10{width:83.159722222222%;}
+.grid_11{width:91.579861111111%;}
+*{margin: 0; padding: 0; -webkit-box-sizing: border-box; -moz-box-sizing: border-box; -ms-box-sizing: border-box; box-sizing: border-box;}
+.hidde{visibility: hidden;}
+.al_l{text-align: left;}
+.al_r{text-align: right;}
+.al_c{text-align: center;}
+.mg_t{margin-top: 0;}
+.mg_b{margin-bottom: 0;}
+.mg_l{margin-left: 0;}
+.mg_r{margin-right: 0;} 
+
+
+/* BASE */
+body{
+    font: 12pt/14pt sans-serif;
+    background-color: #ECE5FB;
+    color: #151818;
+}
+
+.page{
+    width: 960px;
+    margin: 0 auto;
+    font-size: 12px;
+}
+
+
+.header{
+	margin-bottom: 10px;
+    background-color: #444A5E;
+}
+.menu_header{
+	display: block;
+	height: 30px;
+	text-align: right;
+}
+.logo_header a{
+    padding: 0 10px;
+    line-height: 30px;
+    font-size: 18px;
+    text-decoration: none;
+    color: #A2ACCC;
+}
+.menu_header a{
+	line-height: 30px;
+	display: inline-block;
+	padding: 0 10px;
+	text-decoration: none;
+	font-size: 11px;
+	font-weight: bold;
+	color: #ECE5FB;
+}
+.menu_header a:hover{
+	color: #A2ACCC;
+	background-color: #212941;
+}
+.content{
+	margin-bottom: 10px;
+    min-height: 500px;
+	padding: 0;
+}
+.footer{
+	display: block;
+	height: 45px;
+    background-color: #444A5E;
+	text-align: center;
+	padding-top: 5px;
+	font-size: 11px;
+    color: #ECE5FB;
+}
+
+
+/*ELEMENTS*/
+.login_box{
+    width: 280px;
+    margin: 0 auto;
+    padding:100px 0;
+}
+.login_error{
+    margin: 10px 0;
+    padding: 5px;
+    border: 2px solid chocolate;
+}
+.login_box form input[type=text], .login_box form input[type=password]{
+    display: block;
+    width: 230px;
+    margin-top: 10px;
+    padding: 3px 5px;
+    border: none;
+}
+.login_box form input[type=submit]{
+    width: 120px;
+    margin-top: 10px;
+}
