@@ -131,3 +131,62 @@ body{
     width: 120px;
     margin-top: 10px;
 }
+
+
+
+
+/*pages*/
+.user_info{}
+.user_info_title{
+    background-color: #444A5E;
+    line-height: 26px;
+    padding: 0 5px;
+    color: #ECE5FB;
+}
+.users_side{}
+
+.btn{
+    display: block;
+    width: 100%;
+    margin: 0 0 5px;
+    background-color: #444A5E;
+    padding: 0 10px;
+    color: #ECE5FB;
+    line-height: 26px;
+    text-decoration: none;
+    font-size: 11px;
+    font-weight: bold;
+    border-radius: 6px;
+    box-shadow: inset 0 20px 10px rgba(17,20,32,0.5);
+}
+.btn:hover{
+    color: #A2ACCC;
+    background-color: #212941;
+}
+
+.user_box{
+    padding: 3px;
+    border: 1px solid #444A5E;
+    background-color: #ECE5FB;
+    margin-bottom: 10px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

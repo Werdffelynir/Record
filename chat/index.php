@@ -72,30 +72,31 @@ $app->map('/login/{w:out}',function($out) use ($app,$ctrl) {
 });
 
 $app->map('/users',function() use ($app,$ctrl) {
+    $userBoxs = '';
 
-    $app->render('one_column',[
-        'data'=>'users content'
+    $app->render('site/users',[
+        'userInfo'=> $app->partial('site/user_info'),
+        'userBox' => $app->partial('site/user_box'),
     ]);
 });
 
 $app->map('/messages',function() use ($app,$ctrl) {
-
     $app->render('one_column',[
-        'data'=>'messages content'
+        'data'=>$app->partial('site/messages'),
     ]);
 });
 
 $app->map('/profile',function() use ($app,$ctrl) {
 
     $app->render('one_column',[
-        'data'=>'profile content'
+        'data'=>$app->partial('site/profile'),
     ]);
 });
 
 $app->map('/register',function() use ($app,$ctrl) {
 
     $app->render('one_column',[
-        'data'=>'profile content'
+        'data'=>$app->partial('site/form_register'),
     ]);
 });
 
