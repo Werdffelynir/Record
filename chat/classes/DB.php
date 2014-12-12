@@ -59,13 +59,13 @@ class DB
      *
      * SQLite:
      * $DB = new DB([
-     *      'dsn'=>'sqlite:db/db1.sqlite'
-     *      'opt'=>[PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC]
+     *      'dsn'=>'sqlite:db/db1.sqlite',
+     *      'opt'=>[PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC],
      * ]);
      *
      * MS SQL Server:
      * $DB = new DB([
-     *      'dsn'=>'mssql:host=localhost;dbname=test'
+     *      'dsn'=>'mssql:host=localhost;dbname=test',
      *      'user'=>'username',
      *      'pass'=>'password',
      * ]);
@@ -234,11 +234,12 @@ class DB
      * @param array $conditionParams
      * @return null|\PDOStatement
      */
-    public function select($table, $columns, $condition, array $conditionParams = [])
+    public function select($table, $columns, $condition=null, array $conditionParams = [])
     {
         $columns = (is_array($columns)) ? join(',',$columns) : $columns;
         $prepare = "SELECT $columns FROM ".trim($table);
-        $prepare .= " WHERE ".$condition;
+        if($condition)
+            $prepare .= " WHERE ".$condition;
         $this->query($prepare, $conditionParams);
         return $this->PDOStat;
     }

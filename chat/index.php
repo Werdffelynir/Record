@@ -16,6 +16,11 @@ $conf = [
 
 $app = new Record($conf);
 
+$DB = new \classes\DB([
+    'dsn'=>'sqlite:database/database.sqlite',
+    'opt'=>[PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC],
+]);
+
 $ctrl = new controllers\Chat($app);
 $app->controller($ctrl);
 
@@ -38,11 +43,14 @@ function error404() {
 }
 
 $app->map('/',function() use ($app) {
-    $ctrl = new controllers\Chat($app);
-    $app->controller($ctrl);
+    global $DB;
+
+    //$records = $DB->select('records','*')->fetchAll();
+    $records = $DB->PDO()->query("SELECT * FROM records LIMIT 6,3 ")->fetchAll();
+    $records = '<pre>'.print_r($records,true).'</pre>';
 
     $app->render('one_column',[
-        'data'=>'cat content'
+        'data'=>$records
     ]);
 });
 
