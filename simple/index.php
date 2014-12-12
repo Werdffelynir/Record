@@ -6,6 +6,7 @@ use \record\Record;
 
 $conf = [
     'debug'=>true,
+    'lang'=>'ru',
     //'path'=>'/record/simple/',
     'layout'=>'template',
     'title'=>'Web Application Record',

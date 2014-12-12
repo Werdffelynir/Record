@@ -3,15 +3,16 @@ namespace record;
 
 class Record
 {
-    public $auth;
 
-    public $debug;
-    public $root;
+    public $auth = false;
     public $layout;
     public $controller = null;
-    public $request;
-    public $args;
-
+    public $lang = null;
+    private $langDefault = null;
+    private $debug;
+    private $root;
+    private $request;
+    private $args;
     private $partialData = [];
     private $outputData;
     private $chunk;
@@ -65,6 +66,7 @@ class Record
             self::$_conf[$key]=$val;
         }
 
+        $this->langDefault = $this->lang = self::$_conf['lang'];
         $this->debug = self::$_conf['debug'];
         $this->layout = self::$_conf['layout'];
         $this->root = self::$_conf['root'] = trim(self::$_conf['root'],'/').'/';
@@ -103,7 +105,7 @@ class Record
     public function map($map,$call)
     {
         if(empty($map) || !is_callable($call)){
-            throw new \ErrorException();
+            throw new \RuntimeException('invalid callable');
         }else{
 
             $params = $args = null;
@@ -174,6 +176,14 @@ class Record
         $path = $this->conf('path');
         $request = $_SERVER['REQUEST_URI'];
 
+        if($this->langDefault !== null){
+            $_requestFirst = trim($request,'/');
+            if(substr($_requestFirst,2,1)=='/'){
+                $this->lang = substr($_requestFirst,0,2);
+                $request = substr($_requestFirst,2);
+            }
+        }
+
         if(!empty($path) && strpos($request,$path)===0){
             $r = trim($request,'/');
             $p = trim($path,'/');
@@ -222,6 +232,34 @@ class Record
         }
 
         $this->request = $_SERVER['REQUEST_URI'];
+    }
+
+    public function lang($isLang=null)
+    {
+        if(!empty($isLang)){
+            return ($isLang==$this->lang) ? true : false;
+        }else{
+            if($this->langDefault !== null){
+                return $this->lang;
+            }
+            else
+                return null;
+        }
+    }
+
+    public function langUrl($link)
+    {
+        if($this->langDefault !== null && $this->langDefault != $this->lang){
+            $link = trim($link,'/');
+            return '/'.$this->lang.'/'.$link;
+        }
+        else
+            return $link;
+    }
+
+    public function lg()
+    {
+
     }
 
     /**
@@ -680,7 +718,17 @@ class Record
         return sprintf($format, round($size, $round), $units[$i]);
     }
 
+    public static function sendMail($to, $subject, $message, $headers)
+    {
+        $to      = 'nobody@example.com';
+        $subject = 'the subject';
+        $message = 'hello';
+        $headers = 'From: webmaster@example.com' . "\r\n" .
+            'Reply-To: webmaster@example.com' . "\r\n" .
+            'X-Mailer: PHP/' . phpversion();
 
+        mail($to, $subject, $message, $headers);
+    }
 }
 
 
