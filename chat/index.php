@@ -46,7 +46,39 @@ $app->map('/',function() use ($app) {
     global $DB;
 
     //$records = $DB->select('records','*')->fetchAll();
-    $records = $DB->PDO()->query("SELECT * FROM records LIMIT 6,3 ")->fetchAll();
+    //$records = $DB->PDO()->query("SELECT * FROM records LIMIT 6,3 ")->fetchAll();
+
+/*SELECT t1.*, t2.email, t2.name
+FROM table t1
+INNER JOIN table2 t2 ON(t2.id = t1.user_id)
+WHERE t2.user_id=:num'*/
+
+    $records = $DB->select('*','records r','users u on' )
+        ->fetchAll();
+
+    $records = $DB->update('records')
+        ->set('column1=:value1, column2=:value2',[':value1'=>3,':value2'=>3])
+        ->where('r.id=:num',[':num'=>3])
+        ->execute();
+
+    $records = $DB->insert('records')
+        ->set('column1, column2')
+        ->values('value1, value2')
+        ->execute();
+
+    $records = $DB->select('*')
+        ->from('records r')
+        ->leftJoin('users u ON u.id = r.user_id')
+        ->innerJoin('users u ON u.id = r.user_id')
+        ->join('users u ON u.id = r.user_id')
+        ->where('r.id=:num AND r.role!=:role',[ ':num'=>3, ':role'=>2 ])
+        ->orderBy('r.id')
+        ->limit(2, 1)
+        ->union()
+        ->groupBy()
+        ->fetchAll();
+
+
     $records = '<pre>'.print_r($records,true).'</pre>';
 
     $app->render('one_column',[

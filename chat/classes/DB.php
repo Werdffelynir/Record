@@ -259,13 +259,32 @@ class DB
      */
     public function insert($table, array $params=[])
     {
-        $prepare = "INSERT INTO ".trim($table);
-        $prepare .= " (".join(",",array_keys($params)).")";
-        $prepare .= " VALUES('".join("','",$params)."')";
-        $this->query($prepare);
-
-        return $this->PDO->lastInsertId();
+        if(func_num_args()>1) {
+            $prepare = "INSERT INTO ".trim($table);
+            $prepare .= " (".join(",",array_keys($params)).")";
+            $prepare .= " VALUES('".join("','",$params)."')";
+            $this->query($prepare);
+            return $this->PDO->lastInsertId();
+        }else{
+            $prepare = "INSERT INTO ".trim($table);
+            $this->buildSqlString = $prepare;
+            return $this;
+        }
     }
+
+    private $buildSqlString;
+
+    public function from() {}
+    public function leftJoin() {}
+    public function innerJoin() {}
+    public function join() {}
+    public function where() {}
+    public function orderBy() {}
+    public function union() {}
+    public function groupBy() {}
+    public function limit() {}
+    public function set() {}
+    public function values() {}
 
     /**
      * Упрощенный запрос UPDATE
